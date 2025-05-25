@@ -1,3 +1,4 @@
+
 import streamlit as st
 from datetime import timedelta
 import time
@@ -30,8 +31,10 @@ def countdown_timer(color, duration, stage, total_stages):
         remaining_minutes = int(duration.total_seconds() // 60)
         progress = (total_minutes - remaining_minutes) / total_minutes
         status_text.markdown(
-            f"**Etapa {stage} de {total_stages}**  \n"
-            f"Color: `{color}`  \n"
+            f"**Etapa {stage} de {total_stages}**  
+"
+            f"Color: `{color}`  
+"
             f"Tiempo restante: `{format_time(duration)}`"
         )
         progress_bar.progress(progress)
@@ -42,16 +45,16 @@ def countdown_timer(color, duration, stage, total_stages):
     status_text.markdown(f"✅ **Cambio de color: {color} completado.**")
     progress_bar.progress(1.0)
 
-def main():
-    st.title("🎨 Temporizador de Colores para Impresión 3D")
+def impresora_tab(nombre_impresora):
+    st.header(f"Impresora: {nombre_impresora}")
 
-    num_colors = st.number_input("Ingrese el número de colores que se usarán:", min_value=1, step=1)
+    num_colors = st.number_input("Ingrese el número de colores que se usarán:", min_value=1, step=1, key=f"num_colors_{nombre_impresora}")
     colors = []
     durations = []
 
     for i in range(num_colors):
-        color = st.text_input(f"Nombre del color {i+1}:", key=f"color_{i}")
-        duration_str = st.text_input(f"Tiempo de impresión para {color} (hh:mm):", key=f"dur_{i}")
+        color = st.text_input(f"Nombre del color {i+1}:", key=f"color_{i}_{nombre_impresora}")
+        duration_str = st.text_input(f"Tiempo de impresión para {color} (hh:mm):", key=f"dur_{i}_{nombre_impresora}")
         if duration_str:
             try:
                 duration = parse_time(duration_str)
@@ -62,13 +65,22 @@ def main():
 
     if num_colors > 0 and len(colors) == num_colors:
         current_color_index = st.number_input(
-            f"¿Por qué color vas? (1-{num_colors}):", min_value=1, max_value=num_colors, step=1
+            f"¿Por qué color vas? (1-{num_colors}):", min_value=1, max_value=num_colors, step=1, key=f"current_color_{nombre_impresora}"
         ) - 1
 
-        if st.button("▶️ Iniciar Temporizador"):
+        if st.button("▶️ Iniciar Temporizador", key=f"start_{nombre_impresora}"):
             for i in range(current_color_index, num_colors):
                 countdown_timer(colors[i], durations[i], i + 1, num_colors)
 
+def main():
+    st.title("🎨 Temporizador de Colores para Impresión 3D - Multi Impresoras")
+
+    impresoras = ["SV-06 #1", "SV-06 #2", "SV-06 Plus", "Prusa MK3S+"]
+    tabs = st.tabs(impresoras)
+
+    for i, nombre_impresora in enumerate(impresoras):
+        with tabs[i]:
+            impresora_tab(nombre_impresora)
+
 if __name__ == "__main__":
     main()
-
